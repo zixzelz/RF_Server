@@ -2,5 +2,5 @@
     "board": "esp8266:esp8266:generic",
     "configuration": "xtal=160,vt=flash,exception=legacy,ssl=all,ResetMethod=nodemcu,CrystalFreq=26,FlashFreq=40,FlashMode=dout,eesz=1M64,led=2,sdk=nonosdk_190703,ip=lm2f,dbg=Disabled,lvl=None____,wipe=none,baud=460800",
     "port": "/dev/tty.usbserial-1420",
-    "sketch": "RF_Server.ino"
+    "sketch": "examples/RFButton_Simple/RFButton_Simple.ino"
 }
