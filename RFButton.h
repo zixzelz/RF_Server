@@ -1,9 +1,19 @@
 #ifndef RFBUTTON_H_
 #define RFBUTTON_H_
 
+enum RFButtonEvent {
+    RFBUTTONEVENT_SINGLECLICK,
+    RFBUTTONEVENT_DOUBLECLICK,
+    RFBUTTONEVENT_LONGCLICK
+};
+
+typedef std::function<void(RFButtonEvent event)> RFButtonCallback;
+
 typedef struct _RFButtonEntry {
+
     unsigned long buttonCode = 0;
     uint8_t id = -1;
+    RFButtonCallback callback;
 
     //Config
     uint32_t stable_threshold = 120;
@@ -23,16 +33,8 @@ typedef struct _RFButtonEntry {
     struct _RFButtonEntry *next;
 } RFButtonEntry;
 
-enum RFButtonEvent {
-    RFBUTTONEVENT_SINGLECLICK,
-    RFBUTTONEVENT_DOUBLECLICK,
-    RFBUTTONEVENT_LONGCLICK
-};
-
 class RFButtonClass {
    public:
-    typedef std::function<void(uint8_t id, RFButtonEvent event)> rfbutton_callback;
-    rfbutton_callback callback;
 
     RFButtonEntry *entries = nullptr;
 
@@ -41,20 +43,17 @@ class RFButtonClass {
     ~RFButtonClass() {
     }
 
-    RFButtonEntry *add(uint8_t _id, unsigned long _code, bool _longClickEnabled = false, bool _doubleClickEnable = false) {
+    RFButtonEntry *add(uint8_t _id, unsigned long _code, bool _longClickEnabled, bool _doubleClickEnable, RFButtonCallback _callback) {
         RFButtonEntry *entry = new RFButtonEntry();
         entry->id = _id;
         entry->buttonCode = _code;
         entry->longClickEnabled = _longClickEnabled;
         entry->doubleClickEnable = _doubleClickEnable;
+        entry->callback = _callback;
 
         entry->next = entries;
         entries = entry;
         return entry;
-    }
-
-    void setCallback(rfbutton_callback _callback) {
-        callback = _callback;
     }
 
     void handleRFSignal(unsigned long value) {
@@ -124,19 +123,19 @@ class RFButtonClass {
 
     void clickEvent(RFButtonEntry *entry) {
         entry->eventOccured = true;
-        callback(entry->id, RFBUTTONEVENT_SINGLECLICK);
+        entry->callback(RFBUTTONEVENT_SINGLECLICK);
         Serial.println(">>> clickEvent");
     }
 
     void longClickEvent(RFButtonEntry *entry) {
         entry->eventOccured = true;
-        callback(entry->id, RFBUTTONEVENT_LONGCLICK);
+        entry->callback(RFBUTTONEVENT_LONGCLICK);
         Serial.println(">>> longClickEvent");
     }
 
     void doubleClickEvent(RFButtonEntry *entry) {
         entry->eventOccured = true;
-        callback(entry->id, RFBUTTONEVENT_DOUBLECLICK);
+        entry->callback(RFBUTTONEVENT_DOUBLECLICK);
         Serial.println(">>> doubleClickEvent");
     }
 };

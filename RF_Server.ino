@@ -8,7 +8,7 @@
 #include "RFButton.h"
 
 #define RingButtonSt1Value 1940096467
-#define RingButtonSt1Value 303879571
+#define RingButtonSt2Value 303879571
 #define Lamp1ButtonValue 5971969
 
 const char RingButtonSignalPin = 5;
@@ -24,12 +24,8 @@ void setup() {
     mySwitch.enableReceive(digitalPinToInterrupt(12));  // Receiver on interrupt 0 => that is pin #3 for arduino micro
     //  digitalPinToInterrupt(12)digitalPinToInterrupt(12) (D6) esp8266
 
-    RFButton.add(0, Lamp1ButtonValue, true, true);
-    RFButton.add(1, RingButtonSt1Value, false, false);
-    RFButton.add(1, RingButtonSt1Value, false, false);
-
-    RFButton.setCallback([&](uint8_t id, RFButtonEvent event) {
-        // Only one button is added, no need to check the id.
+    RFButton.add(0, Lamp1ButtonValue, false, false, [&](RFButtonEvent event) {
+        Serial.print("Lamp1ButtonValue  ");
         if (event == RFBUTTONEVENT_SINGLECLICK) {
             Serial.println("RFBUTTONEVENT_SINGLECLICK ");
         } else if (event == RFBUTTONEVENT_DOUBLECLICK) {
@@ -38,6 +34,31 @@ void setup() {
             Serial.println("RFBUTTONEVENT_LONGCLICK ");
         }
     });
+
+    RFButtonEntry *entryRing1 = RFButton.add(1, RingButtonSt1Value, false, false, [&](RFButtonEvent event) {
+        Serial.print("RingButtonSt1Value  ");
+        if (event == RFBUTTONEVENT_SINGLECLICK) {
+            Serial.println("RFBUTTONEVENT_SINGLECLICK ");
+        } else if (event == RFBUTTONEVENT_DOUBLECLICK) {
+            Serial.println("RFBUTTONEVENT_DOUBLECLICK ");
+        } else if (event == RFBUTTONEVENT_LONGCLICK) {
+            Serial.println("RFBUTTONEVENT_LONGCLICK ");
+        }
+    });
+
+    RFButtonEntry *entryRing2 = RFButton.add(2, RingButtonSt2Value, false, false, [&](RFButtonEvent event) {
+        Serial.print("RingButtonSt2Value  ");
+        if (event == RFBUTTONEVENT_SINGLECLICK) {
+            Serial.println("RFBUTTONEVENT_SINGLECLICK ");
+        } else if (event == RFBUTTONEVENT_DOUBLECLICK) {
+            Serial.println("RFBUTTONEVENT_DOUBLECLICK ");
+        } else if (event == RFBUTTONEVENT_LONGCLICK) {
+            Serial.println("RFBUTTONEVENT_LONGCLICK ");
+        }
+    });
+
+    entryRing1->stable_threshold = 200;
+    entryRing2->stable_threshold = 200;
 }
 
 unsigned long lastEventTime;
