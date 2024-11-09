@@ -1,6 +1,8 @@
 #ifndef RFBUTTON_H_
 #define RFBUTTON_H_
 
+#include <functional>
+
 enum RFButtonEvent {
     RFBUTTONEVENT_SINGLECLICK,
     RFBUTTONEVENT_DOUBLECLICK,
@@ -16,11 +18,13 @@ typedef struct _RFButtonEntry {
     RFButtonCallback callback;
 
     //Config
-    uint32_t stable_threshold = 120;
+    uint32_t stable_threshold = 800;
     uint32_t longclick_threshold = 1000;
     uint32_t doubleclick_threshold = 500;
+    uint32_t longclick_repeat = 200;
 
     bool longClickEnabled = true;
+    bool longRepeatClickEnabled = false;
     bool doubleClickEnable = true;
 
     // State
@@ -28,6 +32,7 @@ typedef struct _RFButtonEntry {
     unsigned long firstPressedTime;
     unsigned long lastPressedTime;
     bool eventOccured = false;
+    bool eventRepeatOccured = false;
     bool isWaitingForSecondClick = false;
     //======
     struct _RFButtonEntry *next;
@@ -49,6 +54,21 @@ class RFButtonClass {
         entry->buttonCode = _code;
         entry->longClickEnabled = _longClickEnabled;
         entry->doubleClickEnable = _doubleClickEnable;
+        entry->longRepeatClickEnabled = false;
+        entry->callback = _callback;
+
+        entry->next = entries;
+        entries = entry;
+        return entry;
+    }
+
+    RFButtonEntry *addLongRepeatClick(uint8_t _id, unsigned long _code, RFButtonCallback _callback) {
+        RFButtonEntry *entry = new RFButtonEntry();
+        entry->id = _id;
+        entry->buttonCode = _code;
+        entry->longClickEnabled = false;
+        entry->doubleClickEnable = false;
+        entry->longRepeatClickEnabled = true;
         entry->callback = _callback;
 
         entry->next = entries;
@@ -100,8 +120,15 @@ class RFButtonClass {
     }
 
     void handleEntry(RFButtonEntry *entry) {
+        int lastPressedTimeInterval = millis() - entry->lastPressedTime;
         if (entry->lastPressedTime != 0) {
-            if (millis() - entry->lastPressedTime > entry->stable_threshold) {  // Unpressed
+            if ( lastPressedTimeInterval < 100 && 
+                 ((entry->longRepeatClickEnabled && millis() - entry->firstPressedTime > entry->stable_threshold) || (entry->eventRepeatOccured && millis() - entry->firstPressedTime > entry->longclick_repeat)) ) {
+                entry->eventRepeatOccured = true;
+                entry->eventOccured = false;
+                entry->firstPressedTime = 0;
+
+            } else if (lastPressedTimeInterval > entry->stable_threshold) {  // Unpressed
                 Serial.println("Unpressed");
 
                 if (!entry->eventOccured && !entry->doubleClickEnable) {
@@ -110,6 +137,7 @@ class RFButtonClass {
 
                 entry->lastPressedTime = 0;
                 entry->firstPressedTime = 0;
+                entry->eventRepeatOccured = false;
             }
         } else if (!entry->eventOccured && entry->doubleClickEnable && entry->eventSrartTime != 0 && millis() - entry->eventSrartTime > entry->doubleclick_threshold) {
             clickEvent(entry);
