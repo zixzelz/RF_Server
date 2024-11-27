@@ -150,21 +150,21 @@ class RFButtonClass {
     }
 
     void clickEvent(RFButtonEntry *entry) {
+        Serial.println(">>> clickEvent");
         entry->eventOccured = true;
         entry->callback(RFBUTTONEVENT_SINGLECLICK);
-        Serial.println(">>> clickEvent");
     }
 
     void longClickEvent(RFButtonEntry *entry) {
+        Serial.println(">>> longClickEvent");
         entry->eventOccured = true;
         entry->callback(RFBUTTONEVENT_LONGCLICK);
-        Serial.println(">>> longClickEvent");
     }
 
     void doubleClickEvent(RFButtonEntry *entry) {
+        Serial.println(">>> doubleClickEvent");
         entry->eventOccured = true;
         entry->callback(RFBUTTONEVENT_DOUBLECLICK);
-        Serial.println(">>> doubleClickEvent");
     }
 };
 
