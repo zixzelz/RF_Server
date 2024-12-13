@@ -18,7 +18,7 @@ typedef struct _RFButtonEntry {
     RFButtonCallback callback;
 
     //Config
-    uint32_t stable_threshold = 800;
+    uint32_t stable_threshold = 600;
     uint32_t longclick_threshold = 1000;
     uint32_t doubleclick_threshold = 500;
     uint32_t longclick_repeat = 200;
